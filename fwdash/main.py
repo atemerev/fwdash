@@ -114,7 +114,7 @@ with ui.row().classes('w-full no-wrap'):
             ui.plotly(heatmap_fig).classes('w-full h-full')
 
 # Interactivity
-def update_network_graph(e):
+def update_network_graph(e, plot):
     """Updates the network graph based on table selection."""
     if not e.selection:
         # On clear selection, revert to initial message
@@ -129,8 +129,8 @@ def update_network_graph(e):
                 'showarrow': False, 'font': {'size': 16}
             }]
         )
-        network_plot.figure = fig
-        network_plot.update()
+        plot.figure = fig
+        plot.update()
         return
 
     selected_row = e.selection[0]
@@ -186,9 +186,9 @@ def update_network_graph(e):
                         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                     )
-    network_plot.figure = fig
-    network_plot.update()
+    plot.figure = fig
+    plot.update()
 
-table.on('selection', update_network_graph)
+table.on('selection', lambda e: update_network_graph(e, network_plot))
 
 ui.run()
