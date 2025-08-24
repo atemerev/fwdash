@@ -21,17 +21,14 @@ narrative_data = {
             ("Die Schweiz verrät ihre Neutralität für die Interessen der NATO. Das wird uns teuer zu stehen kommen!", "de"),
             ("La neutralité suisse est notre plus grande force. En adoptant les sanctions de l'UE, Berne nous affaiblit et nous expose.", "fr"),
             ("Switzerland's neutrality was its shield for centuries. By siding with the West against Russia, we've thrown that shield away for nothing.", "en"),
-            ("Warum opfert der Bundesrat unsere Neutralität? Wir werden in einen Konflikt hineingezogen, der nicht unserer ist.", "de"),
-            ("Notre neutralité est un trésor. Ne la sacrifions pas sur l'autel des intérêts étrangers.", "fr"),
         ]
     },
-    'ANTI_EU': {
+    'AEU': {
         'description': 'Anti-EU / Sovereignty Loss',
         'messages': [
             ("Ein Rahmenabkommen mit der EU ist der Anfang vom Ende unserer Souveränität. Wir dürfen nicht Brüssels Marionette werden.", "de"),
             ("L'UE veut nous imposer ses règles et ses juges. C'est une attaque directe contre notre démocratie.", "fr"),
             ("The EU framework agreement is a trap that will destroy Swiss sovereignty. We must resist Brussels' control.", "en"),
-            ("Brüssel will unser Geld und unsere Unabhängigkeit. Sagen wir Nein zum institutionellen Abkommen!", "de"),
         ]
     },
     'FIN': {
@@ -40,31 +37,62 @@ narrative_data = {
             ("Die Sanktionen gegen Russland schaden nur uns selbst. Unsere Banken und unsere Wirtschaft zahlen den Preis für die Politik der USA.", "de"),
             ("Les sanctions contre la Russie sont un suicide économique pour la Suisse. Nos PME en paient le prix fort.", "fr"),
             ("Swiss banks are losing their reputation because our government follows US orders. This will lead to a massive financial crisis.", "en"),
-            ("Wer profitiert von den Sanktionen? Sicher nicht die Schweizer Bevölkerung. Es ist Zeit, diese schädliche Politik zu beenden.", "de"),
         ]
     },
     'MIG': {
         'description': 'Anti-Immigration / Crime',
         'messages': [
-            ("Unsere Städte sind nicht mehr sicher. Die unkontrollierte Zuwanderung führt zu einer Kriminalitätsexplosion. Unsere Behörden schauen weg.", "de"),
-            ("Les villes suisses ne sont plus sûres. L'immigration incontrôlée mène à une explosion de la criminalité. Nos autorités ferment les yeux.", "fr"),
+            ("Unsere Städte sind nicht mehr sicher. Die unkontrollierte Zuwanderung führt zu einer Kriminalitätsexplosion.", "de"),
+            ("Les villes suisses ne sont plus sûres. L'immigration incontrôlée mène à une explosion de la criminalité.", "fr"),
             ("Open borders have brought nothing but crime and social tension. Switzerland must regain control.", "en"),
         ]
     },
-    'ANTI_US': {
+    'AUS': {
         'description': 'Anti-US Hegemony',
         'messages': [
-            ("Die Schweiz darf nicht länger der Vasall Washingtons sein. Unsere Aussenpolitik muss unseren Interessen dienen, nicht denen der Amerikaner.", "de"),
-            ("La Suisse doit cesser d'être le vassal de Washington. Notre politique étrangère doit servir nos intérêts, pas ceux des Américains.", "fr"),
+            ("Die Schweiz darf nicht länger der Vasall Washingtons sein. Unsere Aussenpolitik muss unseren Interessen dienen.", "de"),
+            ("La Suisse doit cesser d'être le vassal de Washington. Notre politique étrangère doit servir nos intérêts.", "fr"),
             ("Why is Switzerland buying American F-35 jets? This money should be spent on our own people, not on the US military-industrial complex.", "en"),
         ]
     },
-    'PRO_CN': {
+    'PCN': {
         'description': 'Pro-China / Eastward Pivot',
         'messages': [
-            ("Während der Westen im Niedergang ist, bietet China Stabilität und wirtschaftliche Partnerschaft. Die Schweiz sollte für ihren zukünftigen Wohlstand nach Osten blicken.", "de"),
-            ("Pendant que l'Occident décline, la Chine offre stabilité et partenariat économique. La Suisse devrait se tourner vers l'Est pour sa prospérité future.", "fr"),
+            ("Während der Westen im Niedergang ist, bietet China Stabilität und wirtschaftliche Partnerschaft. Die Schweiz sollte nach Osten blicken.", "de"),
+            ("Pendant que l'Occident décline, la Chine offre stabilité et partenariat économique. La Suisse devrait se tourner vers l'Est.", "fr"),
             ("While the West is in decline, China offers stability and economic partnership. Switzerland should look East for its future prosperity.", "en"),
+        ]
+    },
+    'NRG': {
+        'description': 'Energy Crisis Propaganda',
+        'messages': [
+            ("Die 'grüne' Energiepolitik hat uns in diese Krise geführt. Jetzt frieren wir für ihre Ideologie.", "de"),
+            ("La politique énergétique 'verte' nous a menés à cette crise. Maintenant, nous gelons pour leur idéologie.", "fr"),
+            ("The 'green' energy policy has led us into this crisis. Now we freeze for their ideology.", "en"),
+        ]
+    },
+    'VAX': {
+        'description': 'Vaccine Skepticism / Health Misinformation',
+        'messages': [
+            ("Die 'sicheren und wirksamen' Impfstoffe haben unzählige Nebenwirkungen. Warum wird das vertuscht?", "de"),
+            ("Les vaccins 'sûrs et efficaces' ont d'innombrables effets secondaires. Pourquoi est-ce que c'est caché?", "fr"),
+            ("The 'safe and effective' vaccines have countless side effects. Why is this being covered up?", "en"),
+        ]
+    },
+    'WPN': {
+        'description': 'Anti-Weapons for Ukraine',
+        'messages': [
+            ("Waffenlieferungen an die Ukraine verlängern nur den Krieg und das Leid. Echte Neutralität heisst, keine Waffen zu liefern.", "de"),
+            ("Livrer des armes à l'Ukraine ne fait que prolonger la guerre et la souffrance. La vraie neutralité, c'est de ne pas livrer d'armes.", "fr"),
+            ("Sending weapons to Ukraine only prolongs the war and suffering. True neutrality means not sending weapons.", "en"),
+        ]
+    },
+    'CBR': {
+        'description': 'Cyber-attacks / Infrastructure Threats',
+        'messages': [
+            ("Unsere kritische Infrastruktur ist durch westliche Cyber-Aggressionen gefährdet. Eine neutrale Haltung würde uns schützen.", "de"),
+            ("Notre infrastructure critique est menacée par les cyber-agressions occidentales. Une position neutre nous protégerait.", "fr"),
+            ("Our critical infrastructure is at risk from Western cyber aggression. A neutral stance would protect us.", "en"),
         ]
     }
 }
