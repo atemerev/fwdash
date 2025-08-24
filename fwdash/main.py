@@ -57,7 +57,7 @@ heatmap_data = np.random.gamma(2.0, 2.0, size=(len(narratives), num_heatmap_inte
 
 # UI layout
 with ui.header(elevated=True).classes('bg-primary text-white'):
-    ui.label('Disinformation Narrative Monitor').classes('text-h5')
+    ui.label('Firewatch | Disinfo Narrative Monitor').classes('text-h5')
 
 # Top panel: Messages Table
 with ui.row().classes('w-full'):
