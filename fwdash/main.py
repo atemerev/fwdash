@@ -200,7 +200,7 @@ def handle_row_click(e):
             self.args = {'rows': row_list}
 
     rows_to_pass = []
-    if not table.selected or table.selected[0]['id'] != row['id']:
+    if not table.selected or table.selected[0] != row:
         table.selected.clear()
         table.selected.append(row)
         rows_to_pass = [row]
