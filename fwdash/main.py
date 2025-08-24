@@ -45,7 +45,8 @@ for narrative in narratives:
     narrative_networks[narrative] = {'nodes': narrative_accounts, 'edges': edges}
 
 # Heatmap data
-heatmap_data = np.random.randint(0, 21, size=(len(narratives), 12))
+num_heatmap_intervals = 200
+heatmap_data = np.random.randint(0, 21, size=(len(narratives), num_heatmap_intervals))
 
 
 # UI layout
@@ -87,22 +88,22 @@ with ui.row().classes('w-full no-wrap'):
         network_plot = ui.plotly(fig)
 
 # Bottom Panel: Narrative Density Heatmap
-with ui.column().classes('w-full items-center'):
-    ui.label('Narrative Density Heatmap (last hour)').classes('text-h6')
-    
+with ui.column().classes('w-full h-96'):
+    ui.label('Narrative Density Heatmap').classes('text-h6 self-center')
+
     heatmap_fig = go.Figure(data=go.Heatmap(
         z=heatmap_data,
-        x=[f'T-{60-i*5}min' for i in range(12)],
+        x=list(range(num_heatmap_intervals)),
         y=narratives,
-        colorscale='Bluered',
+        colorscale='Inferno',
         colorbar={'title': 'Messages'}
     ))
     heatmap_fig.update_layout(
         template='plotly_dark',
         margin=dict(l=40, r=20, t=20, b=20),
-        height=100,
+        xaxis=dict(showticklabels=False),
     )
-    ui.plotly(heatmap_fig).classes('w-full')
+    ui.plotly(heatmap_fig).classes('w-full flex-grow')
 
 # Interactivity
 def update_network_graph(e):
