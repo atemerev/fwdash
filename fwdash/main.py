@@ -164,20 +164,22 @@ def update_network_graph(selected_rows, plot):
     # Create node positions for visualization
     pos = {node: (random.random(), random.random()) for node in nodes}
 
-    edge_x = []
-    edge_y = []
+    annotations = []
     for edge_start, edge_end in edges:
         if edge_start in pos and edge_end in pos:
             x0, y0 = pos[edge_start]
             x1, y1 = pos[edge_end]
-            edge_x.extend([x0, x1, None])
-            edge_y.extend([y0, y1, None])
-
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=0.5, color='#444'),
-        hoverinfo='none',
-        mode='lines')
+            annotations.append(
+                dict(
+                    ax=x0, ay=y0, axref='x', ayref='y',
+                    x=x1, y=y1, xref='x', yref='y',
+                    showarrow=True,
+                    arrowhead=2,
+                    arrowsize=1.5,
+                    arrowwidth=1,
+                    arrowcolor='#444'
+                )
+            )
 
     node_x = [pos[node][0] for node in nodes]
     node_y = [pos[node][1] for node in nodes]
@@ -197,14 +199,15 @@ def update_network_graph(selected_rows, plot):
             size=node_sizes,
             line_width=2))
 
-    fig = go.Figure(data=[edge_trace, node_trace],
+    fig = go.Figure(data=[node_trace],
                     layout=go.Layout(
                         template='plotly_white',
                         showlegend=False,
                         hovermode='closest',
                         margin=dict(b=20, l=5, r=5, t=40),
                         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        annotations=annotations)
                     )
     plot.figure = fig
     plot.update()
