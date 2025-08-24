@@ -116,7 +116,7 @@ with ui.row().classes('w-full no-wrap'):
 # Interactivity
 def update_network_graph(e, plot):
     """Updates the network graph based on table selection."""
-    if not e.selection:
+    if not e.args['rows']:
         # On clear selection, revert to initial message
         fig = go.Figure()
         fig.update_layout(
@@ -133,7 +133,7 @@ def update_network_graph(e, plot):
         plot.update()
         return
 
-    selected_row = e.selection[0]
+    selected_row = e.args['rows'][0]
     account = selected_row['account']
     narrative = selected_row['narrative']
     
