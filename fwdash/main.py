@@ -87,21 +87,22 @@ with ui.row().classes('w-full no-wrap'):
         network_plot = ui.plotly(fig)
 
 # Bottom Panel: Narrative Density Heatmap
-with ui.card().classes('w-full'):
+with ui.column().classes('w-full items-center'):
     ui.label('Narrative Density Heatmap (last hour)').classes('text-h6')
     
     heatmap_fig = go.Figure(data=go.Heatmap(
         z=heatmap_data,
         x=[f'T-{60-i*5}min' for i in range(12)],
         y=narratives,
-        colorscale='Reds',
+        colorscale='Bluered',
         colorbar={'title': 'Messages'}
     ))
     heatmap_fig.update_layout(
         template='plotly_dark',
         margin=dict(l=40, r=20, t=20, b=20),
+        height=100,
     )
-    ui.plotly(heatmap_fig)
+    ui.plotly(heatmap_fig).classes('w-full')
 
 # Interactivity
 def update_network_graph(e):
