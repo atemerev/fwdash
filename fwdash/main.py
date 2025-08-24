@@ -225,6 +225,13 @@ with ui.row().classes('w-full no-wrap'):
         with ui.element().classes('flex-grow w-full'):
             ui.plotly(heatmap_fig).classes('w-full h-full')
 
+# Footer
+with ui.row().classes('w-full justify-center p-4'):
+    ui.link('About', '#about')
+    ui.link('Contact', '#contact').classes('ml-4')
+    ui.link('Privacy Policy', '#privacy').classes('ml-4')
+    ui.link('Terms of Service', '#terms').classes('ml-4')
+
 # Interactivity
 def update_network_graph(selected_rows, plot):
     """Updates the network graph based on table selection."""
