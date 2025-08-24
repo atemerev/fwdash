@@ -189,7 +189,7 @@ with ui.header(elevated=True).classes('bg-primary text-white row items-center'):
 
 # Top panel: Messages Table
 with ui.row().classes('w-full'):
-    with ui.card().classes('w-full h-96 overflow-y-auto'):
+    with ui.card().classes('w-full'):
         ui.label('Detected Propaganda Activity').classes('text-h6')
         columns = [
             {'name': 'id', 'label': 'ID', 'field': 'id', 'classes': 'hidden', 'headerClasses': 'hidden'},
@@ -200,7 +200,7 @@ with ui.row().classes('w-full'):
             {'name': 'narrative', 'label': 'Narrative', 'field': 'narrative', 'sortable': True},
             {'name': 'score', 'label': 'Score', 'field': 'score', 'sortable': True},
         ]
-        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single', pagination={'sortBy': 'timestamp', 'descending': True}).classes('h-full w-full')
+        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single', pagination={'sortBy': 'timestamp', 'descending': True}).classes('w-full')
         table.add_slot('header', r'''
             <q-tr :props="props">
                 <q-th v-for="col in props.cols" :key="col.name" :props="props" :class="col.headerClasses">
