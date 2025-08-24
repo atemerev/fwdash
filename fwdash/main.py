@@ -177,9 +177,17 @@ with ui.row().classes('w-full'):
         ''')
         table.add_slot('body', r'''
             <q-tr :props="props" @click="$parent.$emit('row-click', props.row)" class="cursor-pointer">
-                <q-td v-for="col in props.cols" :key="col.name" :props="props" :class="col.classes" :style="col.style">
-                    {{ col.value }}
-                </q-td>
+                <template v-for="col in props.cols" :key="col.name">
+                    <q-td v-if="col.name === 'score'" :props="props" :class="col.classes" :style="col.style">
+                        <span :class="props.row.score > 0.85 ? 'text-red font-bold' : ''">{{ col.value }}</span>
+                    </q-td>
+                    <q-td v-else-if="col.name === 'message'" :props="props" :class="col.classes" :style="col.style">
+                        <span :class="props.row.score > 0.85 ? 'font-bold' : ''">{{ col.value }}</span>
+                    </q-td>
+                    <q-td v-else :props="props" :class="col.classes" :style="col.style">
+                        {{ col.value }}
+                    </q-td>
+                </template>
             </q-tr>
         ''')
 
