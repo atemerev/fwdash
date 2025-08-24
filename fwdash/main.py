@@ -3,6 +3,7 @@ import random
 import string
 import plotly.graph_objects as go
 import numpy as np
+from datetime import datetime, timedelta
 
 # Mock data generation
 platforms = ['X', 'Telegram', 'Reddit', 'Bluesky']
@@ -23,6 +24,7 @@ def generate_message_data(num_messages=50):
 
         data.append({
             'id': i,
+            'timestamp': (datetime.now() - timedelta(minutes=random.randint(0, 60*24))).strftime('%Y-%m-%d %H:%M:%S'),
             'message': f'This is a sample message for narrative {narrative}. ' + ''.join(random.choices(string.ascii_letters + ' ', k=80)),
             'platform': random.choice(platforms),
             'account': account,
@@ -64,14 +66,14 @@ with ui.row().classes('w-full'):
     with ui.card().classes('w-full h-96 overflow-y-auto'):
         ui.label('Detected Propaganda Activity').classes('text-h6')
         columns = [
-            {'name': 'id', 'label': 'ID', 'field': 'id', 'sortable': True, 'max-width': '50px'},
+            {'name': 'timestamp', 'label': 'Timestamp', 'field': 'timestamp', 'sortable': True},
             {'name': 'message', 'label': 'Message', 'field': 'message', 'align': 'left', 'style': 'white-space: normal;'},
             {'name': 'platform', 'label': 'Platform', 'field': 'platform', 'sortable': True},
             {'name': 'account', 'label': 'Account', 'field': 'account', 'sortable': True},
             {'name': 'narrative', 'label': 'Narrative', 'field': 'narrative', 'sortable': True},
             {'name': 'score', 'label': 'Score', 'field': 'score', 'sortable': True},
         ]
-        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single').classes('h-full')
+        table = ui.table(columns=columns, rows=message_data, row_key='id').classes('h-full')
 
 
 # Bottom panels
@@ -189,6 +191,24 @@ def update_network_graph(e, plot):
     plot.figure = fig
     plot.update()
 
-table.on('selection', lambda e: update_network_graph(e, network_plot))
+def handle_row_click(e):
+    """Handle row clicks to select/deselect and update the network graph."""
+    row = e.args['row']
+
+    class FakeEvent:
+        def __init__(self, row_list):
+            self.args = {'rows': row_list}
+
+    rows_to_pass = []
+    if not table.selected or table.selected[0]['id'] != row['id']:
+        table.selected.clear()
+        table.selected.append(row)
+        rows_to_pass = [row]
+    else:
+        table.selected.clear()
+
+    update_network_graph(FakeEvent(rows_to_pass), network_plot)
+
+table.on('rowClick', handle_row_click)
 
 ui.run()
