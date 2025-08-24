@@ -177,7 +177,8 @@ def update_network_graph(selected_rows, plot):
                     arrowhead=2,
                     arrowsize=1.5,
                     arrowwidth=1,
-                    arrowcolor='#444'
+                    arrowcolor='#444',
+                    opacity=0.5
                 )
             )
 
