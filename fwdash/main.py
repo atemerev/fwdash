@@ -66,6 +66,7 @@ with ui.row().classes('w-full'):
     with ui.card().classes('w-full h-96 overflow-y-auto'):
         ui.label('Detected Propaganda Activity').classes('text-h6')
         columns = [
+            {'name': 'id', 'label': 'ID', 'field': 'id', 'classes': 'hidden', 'headerClasses': 'hidden'},
             {'name': 'timestamp', 'label': 'Timestamp', 'field': 'timestamp', 'sortable': True},
             {'name': 'message', 'label': 'Message', 'field': 'message', 'align': 'left', 'style': 'white-space: normal;'},
             {'name': 'platform', 'label': 'Platform', 'field': 'platform', 'sortable': True},
@@ -193,17 +194,26 @@ def update_network_graph(e, plot):
 
 def handle_row_click(e):
     """Handle row clicks to select/deselect and update the network graph."""
-    row = e.args[0]
+    clicked_row_data = e.args[0]
 
     class FakeEvent:
         def __init__(self, row_list):
             self.args = {'rows': row_list}
 
+    # The row from the event might not have all data. We use its ID to find the full row data.
+    row_id = clicked_row_data.get('id')
+    if row_id is None:
+        return  # Should not happen if 'id' is a (hidden) column
+
+    full_row = next((r for r in message_data if r['id'] == row_id), None)
+    if not full_row:
+        return  # Should not happen
+
     rows_to_pass = []
-    if not table.selected or table.selected[0] != row:
+    if not table.selected or table.selected[0]['id'] != full_row['id']:
         table.selected.clear()
-        table.selected.append(row)
-        rows_to_pass = [row]
+        table.selected.append(full_row)
+        rows_to_pass = [full_row]
     else:
         table.selected.clear()
 
