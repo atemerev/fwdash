@@ -31,8 +31,6 @@ def generate_message_data(num_messages=50):
         })
     return data
 
-message_data = generate_message_data()
-
 # Mock data for networks and heatmap
 narrative_networks = {}
 for narrative in narratives:
@@ -49,6 +47,8 @@ for narrative in narratives:
             if random.random() < 0.3:
                 edges.append((narrative_accounts[i], narrative_accounts[j]))
     narrative_networks[narrative] = {'nodes': narrative_accounts, 'edges': edges}
+
+message_data = generate_message_data()
 
 # Heatmap data
 num_heatmap_intervals = 200
