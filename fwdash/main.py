@@ -55,6 +55,9 @@ message_data = generate_message_data()
 # Heatmap data
 num_heatmap_intervals = 200
 heatmap_data = np.random.gamma(2.0, 2.0, size=(len(narratives), num_heatmap_intervals))
+now = datetime.now()
+heatmap_x_labels = [(now - timedelta(minutes=i*5)) for i in range(num_heatmap_intervals)]
+heatmap_x_labels.reverse()
 
 
 # UI layout
@@ -117,7 +120,7 @@ with ui.row().classes('w-full no-wrap'):
 
         heatmap_fig = go.Figure(data=go.Heatmap(
             z=heatmap_data,
-            x=list(range(num_heatmap_intervals)),
+            x=heatmap_x_labels,
             y=narratives,
             colorscale='Inferno',
             colorbar={'title': 'Messages'}
@@ -125,7 +128,7 @@ with ui.row().classes('w-full no-wrap'):
         heatmap_fig.update_layout(
             template='plotly_white',
             margin=dict(l=40, r=20, t=20, b=20),
-            xaxis=dict(showticklabels=False),
+            xaxis=dict(showticklabels=True),
         )
         with ui.element().classes('flex-grow w-full'):
             ui.plotly(heatmap_fig).classes('w-full h-full')
