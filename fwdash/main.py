@@ -83,7 +83,7 @@ with ui.row().classes('w-full'):
             </q-tr>
         ''')
         table.add_slot('body', r'''
-            <q-tr :props="props" @click="props.selected = !props.selected" class="cursor-pointer">
+            <q-tr :props="props" @click="$parent.$emit('row-click', props.row)" class="cursor-pointer">
                 <q-td v-for="col in props.cols" :key="col.name" :props="props" :class="col.classes" :style="col.style">
                     {{ col.value }}
                 </q-td>
@@ -206,6 +206,22 @@ def update_network_graph(selected_rows, plot):
     plot.figure = fig
     plot.update()
 
-table.on('select', lambda e: update_network_graph(e.selection, network_plot))
+def handle_row_click(e):
+    """Handle custom row-click event."""
+    clicked_row = e.args
+    if not clicked_row:
+        return
+
+    # Toggle selection
+    if table.selected and table.selected[0]['id'] == clicked_row['id']:
+        table.selected.clear()
+    else:
+        table.selected.clear()
+        table.selected.append(clicked_row)
+
+    # Update the network graph
+    update_network_graph(table.selected, network_plot)
+
+table.on('row-click', handle_row_click)
 
 ui.run()
