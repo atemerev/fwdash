@@ -167,7 +167,7 @@ with ui.row().classes('w-full'):
             {'name': 'narrative', 'label': 'Narrative', 'field': 'narrative', 'sortable': True},
             {'name': 'score', 'label': 'Score', 'field': 'score', 'sortable': True},
         ]
-        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single').classes('h-full')
+        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single').classes('h-full w-full')
         table.add_slot('header', r'''
             <q-tr :props="props">
                 <q-th v-for="col in props.cols" :key="col.name" :props="props" :class="col.headerClasses">
@@ -177,17 +177,11 @@ with ui.row().classes('w-full'):
         ''')
         table.add_slot('body', r'''
             <q-tr :props="props" @click="$parent.$emit('row-click', props.row)" class="cursor-pointer">
-                <template v-for="col in props.cols" :key="col.name">
-                    <q-td v-if="col.name === 'score'" :props="props" :class="col.classes" :style="col.style">
-                        <span :class="props.row.score > 0.85 ? 'text-red font-bold' : ''">{{ col.value }}</span>
-                    </q-td>
-                    <q-td v-else-if="col.name === 'message'" :props="props" :class="col.classes" :style="col.style">
-                        <span :class="props.row.score > 0.85 ? 'font-bold' : ''">{{ col.value }}</span>
-                    </q-td>
-                    <q-td v-else :props="props" :class="col.classes" :style="col.style">
-                        {{ col.value }}
-                    </q-td>
-                </template>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props" :class="col.classes" :style="col.style">
+                    <span v-if="col.name === 'score'" :class="props.row.score > 0.85 ? 'text-red font-bold' : ''">{{ col.value }}</span>
+                    <span v-else-if="col.name === 'message'" :class="props.row.score > 0.85 ? 'font-bold' : ''">{{ col.value }}</span>
+                    <template v-else>{{ col.value }}</template>
+                </q-td>
             </q-tr>
         ''')
 
