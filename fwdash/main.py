@@ -193,7 +193,7 @@ def update_network_graph(e, plot):
 
 def handle_row_click(e):
     """Handle row clicks to select/deselect and update the network graph."""
-    row = e.args['row']
+    row = e.args[0]
 
     class FakeEvent:
         def __init__(self, row_list):
