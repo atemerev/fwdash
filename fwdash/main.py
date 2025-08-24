@@ -7,16 +7,78 @@ from datetime import datetime, timedelta
 
 # Mock data generation
 platforms = ['X', 'Telegram', 'Reddit', 'Bluesky']
-narratives = ['Naz', 'Bio', 'Con', 'Rcp', 'Ele', 'War', 'Eco', 'Imm', 'Pol', 'Fin']
-accounts = [f'user_{"".join(random.choices(string.ascii_lowercase + string.digits, k=6))}' for _ in range(50)]
+accounts = [
+    'IvanK_Z', 'Elena_Smirnova88', 'Misha_pravda', 'RT_Deutsch_Fan', 'Sputnik_DE',
+    'LiWei_news', 'ChinaObserver', 'Wang_reports', 'SilkRoad_CH', 'BeijingTimes_EU',
+    'SwissPatriot76', 'TellSohn', 'HeidiCH', 'NeutralityNow', 'AlpenBote',
+    'Freiheit_CH', 'DirectDemocrat', 'SouverainetéSuisse', 'VoixDuPeuple', 'SwissFirst'
+]
+
+narrative_data = {
+    'NEU': {
+        'description': 'Erosion of Swiss Neutrality',
+        'messages': [
+            ("Die Schweiz verrät ihre Neutralität für die Interessen der NATO. Das wird uns teuer zu stehen kommen!", "de"),
+            ("La neutralité suisse est notre plus grande force. En adoptant les sanctions de l'UE, Berne nous affaiblit et nous expose.", "fr"),
+            ("Switzerland's neutrality was its shield for centuries. By siding with the West against Russia, we've thrown that shield away for nothing.", "en"),
+            ("Warum opfert der Bundesrat unsere Neutralität? Wir werden in einen Konflikt hineingezogen, der nicht unserer ist.", "de"),
+            ("Notre neutralité est un trésor. Ne la sacrifions pas sur l'autel des intérêts étrangers.", "fr"),
+        ]
+    },
+    'ANTI_EU': {
+        'description': 'Anti-EU / Sovereignty Loss',
+        'messages': [
+            ("Ein Rahmenabkommen mit der EU ist der Anfang vom Ende unserer Souveränität. Wir dürfen nicht Brüssels Marionette werden.", "de"),
+            ("L'UE veut nous imposer ses règles et ses juges. C'est une attaque directe contre notre démocratie.", "fr"),
+            ("The EU framework agreement is a trap that will destroy Swiss sovereignty. We must resist Brussels' control.", "en"),
+            ("Brüssel will unser Geld und unsere Unabhängigkeit. Sagen wir Nein zum institutionellen Abkommen!", "de"),
+        ]
+    },
+    'FIN': {
+        'description': 'Financial Crisis / Sanctions Backfire',
+        'messages': [
+            ("Die Sanktionen gegen Russland schaden nur uns selbst. Unsere Banken und unsere Wirtschaft zahlen den Preis für die Politik der USA.", "de"),
+            ("Les sanctions contre la Russie sont un suicide économique pour la Suisse. Nos PME en paient le prix fort.", "fr"),
+            ("Swiss banks are losing their reputation because our government follows US orders. This will lead to a massive financial crisis.", "en"),
+            ("Wer profitiert von den Sanktionen? Sicher nicht die Schweizer Bevölkerung. Es ist Zeit, diese schädliche Politik zu beenden.", "de"),
+        ]
+    },
+    'MIG': {
+        'description': 'Anti-Immigration / Crime',
+        'messages': [
+            ("Unsere Städte sind nicht mehr sicher. Die unkontrollierte Zuwanderung führt zu einer Kriminalitätsexplosion. Unsere Behörden schauen weg.", "de"),
+            ("Les villes suisses ne sont plus sûres. L'immigration incontrôlée mène à une explosion de la criminalité. Nos autorités ferment les yeux.", "fr"),
+            ("Open borders have brought nothing but crime and social tension. Switzerland must regain control.", "en"),
+        ]
+    },
+    'ANTI_US': {
+        'description': 'Anti-US Hegemony',
+        'messages': [
+            ("Die Schweiz darf nicht länger der Vasall Washingtons sein. Unsere Aussenpolitik muss unseren Interessen dienen, nicht denen der Amerikaner.", "de"),
+            ("La Suisse doit cesser d'être le vassal de Washington. Notre politique étrangère doit servir nos intérêts, pas ceux des Américains.", "fr"),
+            ("Why is Switzerland buying American F-35 jets? This money should be spent on our own people, not on the US military-industrial complex.", "en"),
+        ]
+    },
+    'PRO_CN': {
+        'description': 'Pro-China / Eastward Pivot',
+        'messages': [
+            ("Während der Westen im Niedergang ist, bietet China Stabilität und wirtschaftliche Partnerschaft. Die Schweiz sollte für ihren zukünftigen Wohlstand nach Osten blicken.", "de"),
+            ("Pendant que l'Occident décline, la Chine offre stabilité et partenariat économique. La Suisse devrait se tourner vers l'Est pour sa prospérité future.", "fr"),
+            ("While the West is in decline, China offers stability and economic partnership. Switzerland should look East for its future prosperity.", "en"),
+        ]
+    }
+}
+narratives = list(narrative_data.keys())
 
 def generate_message_data(num_messages=50):
     """Generates mock message data."""
     data = []
     for i in range(num_messages):
-        narrative = random.choice(narratives)
+        narrative_code = random.choice(narratives)
+        message_text, lang = random.choice(narrative_data[narrative_code]['messages'])
+
         # Ensure the account is from the narrative's network for consistency
-        network_nodes = narrative_networks[narrative]['nodes']
+        network_nodes = narrative_networks[narrative_code]['nodes']
         if network_nodes:
             account = random.choice(network_nodes)
         else:
@@ -25,10 +87,10 @@ def generate_message_data(num_messages=50):
         data.append({
             'id': i,
             'timestamp': (datetime.now() - timedelta(minutes=random.randint(0, 60*24))).strftime('%Y-%m-%d %H:%M:%S'),
-            'message': f'This is a sample message for narrative {narrative}. ' + ''.join(random.choices(string.ascii_letters + ' ', k=80)),
+            'message': message_text,
             'platform': random.choice(platforms),
             'account': account,
-            'narrative': narrative,
+            'narrative': narrative_code,
             'score': round(random.uniform(0.5, 1.0), 2)
         })
     return data
