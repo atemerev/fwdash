@@ -226,11 +226,11 @@ with ui.row().classes('w-full no-wrap'):
             ui.plotly(heatmap_fig).classes('w-full h-full')
 
 # Footer
-with ui.row().classes('w-full justify-center p-4'):
-    ui.link('About', '#about')
-    ui.link('Contact', '#contact').classes('ml-4')
-    ui.link('Privacy Policy', '#privacy').classes('ml-4')
-    ui.link('Terms of Service', '#terms').classes('ml-4')
+with ui.row().classes('w-full p-4'):
+    ui.link('Documentation', '#documentation')
+    ui.link('Methodology', '#methodology').classes('ml-4')
+    ui.link('Data Sources', '#data-sources').classes('ml-4')
+    ui.link('Support', '#support').classes('ml-4')
 
 # Interactivity
 def update_network_graph(selected_rows, plot):
