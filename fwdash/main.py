@@ -85,7 +85,7 @@ with ui.row().classes('w-full no-wrap'):
                 'showarrow': False, 'font': {'size': 16}
             }]
         )
-        network_plot = ui.plotly(fig)
+        network_plot = ui.plotly(fig).classes('w-full flex-grow')
 
     # Panel 3: Narrative Density Heatmap
     with ui.card().classes('w-1/2 h-96'):
@@ -103,7 +103,7 @@ with ui.row().classes('w-full no-wrap'):
             margin=dict(l=40, r=20, t=20, b=20),
             xaxis=dict(showticklabels=False),
         )
-        ui.plotly(heatmap_fig).classes('w-full h-full')
+        ui.plotly(heatmap_fig).classes('w-full flex-grow')
 
 # Interactivity
 def update_network_graph(e):
