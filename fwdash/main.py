@@ -74,7 +74,21 @@ with ui.row().classes('w-full'):
             {'name': 'narrative', 'label': 'Narrative', 'field': 'narrative', 'sortable': True},
             {'name': 'score', 'label': 'Score', 'field': 'score', 'sortable': True},
         ]
-        table = ui.table(columns=columns, rows=message_data, row_key='id').classes('h-full')
+        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single').classes('h-full')
+        table.add_slot('header', r'''
+            <q-tr :props="props">
+                <q-th v-for="col in props.cols" :key="col.name" :props="props" :class="col.headerClasses">
+                    {{ col.label }}
+                </q-th>
+            </q-tr>
+        ''')
+        table.add_slot('body', r'''
+            <q-tr :props="props" @click="props.selected = !props.selected" class="cursor-pointer">
+                <q-td v-for="col in props.cols" :key="col.name" :props="props" :class="col.classes" :style="col.style">
+                    {{ col.value }}
+                </q-td>
+            </q-tr>
+        ''')
 
 
 # Bottom panels
@@ -117,9 +131,9 @@ with ui.row().classes('w-full no-wrap'):
             ui.plotly(heatmap_fig).classes('w-full h-full')
 
 # Interactivity
-def update_network_graph(e, plot):
+def update_network_graph(selected_rows, plot):
     """Updates the network graph based on table selection."""
-    if not e.args['rows']:
+    if not selected_rows:
         # On clear selection, revert to initial message
         fig = go.Figure()
         fig.update_layout(
@@ -136,7 +150,7 @@ def update_network_graph(e, plot):
         plot.update()
         return
 
-    selected_row = e.args['rows'][0]
+    selected_row = selected_rows[0]
     account = selected_row['account']
     narrative = selected_row['narrative']
     
@@ -192,33 +206,6 @@ def update_network_graph(e, plot):
     plot.figure = fig
     plot.update()
 
-def handle_row_click(e):
-    """Handle row clicks to select/deselect and update the network graph."""
-    clicked_row_data = e.args[0]
-
-    class FakeEvent:
-        def __init__(self, row_list):
-            self.args = {'rows': row_list}
-
-    # The row from the event might not have all data. We use its ID to find the full row data.
-    row_id = clicked_row_data.get('id')
-    if row_id is None:
-        return  # Should not happen if 'id' is a (hidden) column
-
-    full_row = next((r for r in message_data if r['id'] == row_id), None)
-    if not full_row:
-        return  # Should not happen
-
-    rows_to_pass = []
-    if not table.selected or table.selected[0]['id'] != full_row['id']:
-        table.selected.clear()
-        table.selected.append(full_row)
-        rows_to_pass = [full_row]
-    else:
-        table.selected.clear()
-
-    update_network_graph(FakeEvent(rows_to_pass), network_plot)
-
-table.on('rowClick', handle_row_click)
+table.on('select', lambda e: update_network_graph(e.selection, network_plot))
 
 ui.run()
