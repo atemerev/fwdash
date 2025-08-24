@@ -184,7 +184,7 @@ def update_network_graph(selected_rows, plot):
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
-        mode='markers',
+        mode='markers+text',
         hoverinfo='text',
         text=node_text,
         marker=dict(
@@ -195,7 +195,6 @@ def update_network_graph(selected_rows, plot):
 
     fig = go.Figure(data=[edge_trace, node_trace],
                     layout=go.Layout(
-                        title=f'Network for Narrative: {narrative}',
                         template='plotly_white',
                         showlegend=False,
                         hovermode='closest',
