@@ -89,7 +89,7 @@ with ui.row().classes('w-full no-wrap'):
 
 # Bottom Panel: Narrative Density Heatmap
 with ui.column().classes('w-full h-96'):
-    ui.label('Narrative Density Heatmap').classes('text-h6 self-center')
+    ui.label('Narrative Density Heatmap').classes('text-h6 pl-4')
 
     heatmap_fig = go.Figure(data=go.Heatmap(
         z=heatmap_data,
