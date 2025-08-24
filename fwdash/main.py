@@ -50,8 +50,6 @@ heatmap_data = np.random.randint(0, 21, size=(len(narratives), num_heatmap_inter
 
 
 # UI layout
-ui.dark_mode().enable()
-
 with ui.header(elevated=True).classes('bg-primary text-white'):
     ui.label('Disinformation Narrative Monitor').classes('text-h5')
 
@@ -76,7 +74,7 @@ with ui.row().classes('w-full no-wrap'):
         
         fig = go.Figure()
         fig.update_layout(
-            template='plotly_dark',
+            template='plotly_white',
             xaxis={'showgrid': False, 'zeroline': False, 'visible': False},
             yaxis={'showgrid': False, 'zeroline': False, 'visible': False},
             annotations=[{
@@ -99,7 +97,7 @@ with ui.column().classes('w-full h-96'):
         colorbar={'title': 'Messages'}
     ))
     heatmap_fig.update_layout(
-        template='plotly_dark',
+        template='plotly_white',
         margin=dict(l=40, r=20, t=20, b=20),
         xaxis=dict(showticklabels=False),
     )
@@ -112,7 +110,7 @@ def update_network_graph(e):
         # On clear selection, revert to initial message
         fig = go.Figure()
         fig.update_layout(
-            template='plotly_dark',
+            template='plotly_white',
             xaxis={'showgrid': False, 'zeroline': False, 'visible': False},
             yaxis={'showgrid': False, 'zeroline': False, 'visible': False},
             annotations=[{
@@ -146,7 +144,7 @@ def update_network_graph(e):
 
     edge_trace = go.Scatter(
         x=edge_x, y=edge_y,
-        line=dict(width=0.5, color='#888'),
+        line=dict(width=0.5, color='#444'),
         hoverinfo='none',
         mode='lines')
 
@@ -170,7 +168,7 @@ def update_network_graph(e):
     fig = go.Figure(data=[edge_trace, node_trace],
                     layout=go.Layout(
                         title=f'Network for Narrative: {narrative}',
-                        template='plotly_dark',
+                        template='plotly_white',
                         showlegend=False,
                         hovermode='closest',
                         margin=dict(b=20, l=5, r=5, t=40),
