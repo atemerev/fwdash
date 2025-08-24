@@ -52,7 +52,7 @@ message_data = generate_message_data()
 
 # Heatmap data
 num_heatmap_intervals = 200
-heatmap_data = np.random.gamma(2.0, 2.0, size=(len(narratives), num_heatmap_intervals)) * 30
+heatmap_data = np.random.gamma(2.0, 2.0, size=(len(narratives), num_heatmap_intervals))
 
 
 # UI layout
