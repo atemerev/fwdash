@@ -130,6 +130,7 @@ def update_network_graph(e):
             }]
         )
         network_plot.figure = fig
+        network_plot.update()
         return
 
     selected_row = e.selection[0]
@@ -186,6 +187,7 @@ def update_network_graph(e):
                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                     )
     network_plot.figure = fig
+    network_plot.update()
 
 table.on('selection', update_network_graph)
 
