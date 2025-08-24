@@ -151,8 +151,10 @@ heatmap_x_labels.reverse()
 
 
 # UI layout
-with ui.header(elevated=True).classes('bg-primary text-white'):
+with ui.header(elevated=True).classes('bg-primary text-white row items-center'):
     ui.label('Firewatch | Disinfo Narrative Monitor').classes('text-h5')
+    ui.space()
+    ui.button(icon='menu').props('flat color=white')
 
 # Top panel: Messages Table
 with ui.row().classes('w-full'):
