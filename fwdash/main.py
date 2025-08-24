@@ -187,6 +187,7 @@ def update_network_graph(selected_rows, plot):
         mode='markers+text',
         hoverinfo='text',
         text=node_text,
+        textposition='bottom center',
         marker=dict(
             showscale=False,
             color=node_colors,
