@@ -1,6 +1,8 @@
 from nicegui import ui
 import random
 import string
+import plotly.graph_objects as go
+import numpy as np
 
 # Mock data generation
 platforms = ['X', 'Telegram', 'Reddit', 'Bluesky']
@@ -25,6 +27,27 @@ def generate_message_data(num_messages=50):
 
 message_data = generate_message_data()
 
+# Mock data for networks and heatmap
+narrative_networks = {}
+for narrative in narratives:
+    num_nodes = random.randint(5, 15)
+    # Ensure the accounts in the network are from the main accounts list
+    if len(accounts) >= num_nodes:
+        narrative_accounts = random.sample(accounts, num_nodes)
+    else:
+        narrative_accounts = accounts
+    
+    edges = []
+    for i in range(len(narrative_accounts)):
+        for j in range(i + 1, len(narrative_accounts)):
+            if random.random() < 0.3:
+                edges.append((narrative_accounts[i], narrative_accounts[j]))
+    narrative_networks[narrative] = {'nodes': narrative_accounts, 'edges': edges}
+
+# Heatmap data
+heatmap_data = np.random.randint(0, 21, size=(len(narratives), 12))
+
+
 # UI layout
 ui.dark_mode().enable()
 
@@ -34,68 +57,126 @@ with ui.header(elevated=True).classes('bg-primary text-white'):
 # Top panels
 with ui.row().classes('w-full no-wrap'):
     # Panel 1: Messages Table
-    with ui.card().classes('w-1/2'):
+    with ui.card().classes('w-1/2 h-96 overflow-y-auto'):
         ui.label('Detected Propaganda Activity').classes('text-h6')
         columns = [
             {'name': 'id', 'label': 'ID', 'field': 'id', 'sortable': True, 'max-width': '50px'},
-            {'name': 'message', 'label': 'Message', 'field': 'message', 'align': 'left'},
+            {'name': 'message', 'label': 'Message', 'field': 'message', 'align': 'left', 'style': 'white-space: normal;'},
             {'name': 'platform', 'label': 'Platform', 'field': 'platform', 'sortable': True},
             {'name': 'account', 'label': 'Account', 'field': 'account', 'sortable': True},
             {'name': 'narrative', 'label': 'Narrative', 'field': 'narrative', 'sortable': True},
             {'name': 'score', 'label': 'Score', 'field': 'score', 'sortable': True},
         ]
-        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single').classes('h-96')
+        table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single').classes('h-full')
 
     # Panel 2: Network Graph
-    with ui.card().classes('w-1/2'):
+    with ui.card().classes('w-1/2 h-96'):
         ui.label('Account Network').classes('text-h6')
-        network_view = ui.mermaid('graph TD; A[Select a message];')
+        
+        fig = go.Figure()
+        fig.update_layout(
+            template='plotly_dark',
+            xaxis={'showgrid': False, 'zeroline': False, 'visible': False},
+            yaxis={'showgrid': False, 'zeroline': False, 'visible': False},
+            annotations=[{
+                'text': 'Select a message to see the network',
+                'xref': 'paper', 'yref': 'paper',
+                'showarrow': False, 'font': {'size': 16}
+            }]
+        )
+        network_plot = ui.plotly(fig)
 
 # Bottom Panel: Narrative Density Heatmap
 with ui.card().classes('w-full'):
     ui.label('Narrative Density Heatmap (last hour)').classes('text-h6')
-    with ui.column():
-        for narrative in narratives:
-            with ui.row().classes('items-center w-full'):
-                ui.label(narrative).classes('w-12 font-mono')
-                with ui.row().classes('no-wrap border rounded-sm p-1 flex-grow'):
-                    for i in range(12): # 12 * 5-minute intervals = 1 hour
-                        density = random.randint(0, 20)
-                        # Heatmap color from blue (low) to red (high)
-                        red = int(255 * (density / 20.0))
-                        blue = 255 - red
-                        color = f'rgb({red}, 0, {blue})'
-                        with ui.tooltip(f'{density} messages in interval {i+1}'):
-                            ui.label().classes('w-8 h-8 border').style(f'background-color: {color}')
+    
+    heatmap_fig = go.Figure(data=go.Heatmap(
+        z=heatmap_data,
+        x=[f'T-{60-i*5}min' for i in range(12)],
+        y=narratives,
+        colorscale='Reds',
+        colorbar={'title': 'Messages'}
+    ))
+    heatmap_fig.update_layout(
+        template='plotly_dark',
+        margin=dict(l=40, r=20, t=20, b=20),
+    )
+    ui.plotly(heatmap_fig)
 
 # Interactivity
 def update_network_graph(e):
     """Updates the network graph based on table selection."""
     if not e.selection:
-        network_view.content = 'graph TD;\n A[Select a message to see the network]'
+        # On clear selection, revert to initial message
+        fig = go.Figure()
+        fig.update_layout(
+            template='plotly_dark',
+            xaxis={'showgrid': False, 'zeroline': False, 'visible': False},
+            yaxis={'showgrid': False, 'zeroline': False, 'visible': False},
+            annotations=[{
+                'text': 'Select a message to see the network',
+                'xref': 'paper', 'yref': 'paper',
+                'showarrow': False, 'font': {'size': 16}
+            }]
+        )
+        network_plot.figure = fig
         return
 
     selected_row = e.selection[0]
     account = selected_row['account']
+    narrative = selected_row['narrative']
+    
+    network_data = narrative_networks[narrative]
+    nodes = network_data['nodes']
+    edges = network_data['edges']
 
-    # Generate a mock network for the narrative
-    graph = f'graph TD;\n'
-    graph += f'    {account}((("{account}")));\n' # Highlight selected account
-    
-    # Add some other accounts in the same narrative
-    other_accounts = random.sample([acc for acc in accounts if acc != account], k=random.randint(2, 5))
-    for other_acc in other_accounts:
-        graph += f'    {other_acc};\n'
-        if random.random() > 0.5:
-            graph += f'    {account} --> {other_acc};\n'
-        else:
-            graph += f'    {other_acc} --> {account};\n'
-    
-    network_view.content = graph
+    # Create node positions for visualization
+    pos = {node: (random.random(), random.random()) for node in nodes}
+
+    edge_x = []
+    edge_y = []
+    for edge_start, edge_end in edges:
+        if edge_start in pos and edge_end in pos:
+            x0, y0 = pos[edge_start]
+            x1, y1 = pos[edge_end]
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
+
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=0.5, color='#888'),
+        hoverinfo='none',
+        mode='lines')
+
+    node_x = [pos[node][0] for node in nodes]
+    node_y = [pos[node][1] for node in nodes]
+    node_text = nodes
+    node_colors = ['#ff0000' if node == account else '#1f77b4' for node in nodes]
+    node_sizes = [20 if node == account else 10 for node in nodes]
+
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers',
+        hoverinfo='text',
+        text=node_text,
+        marker=dict(
+            showscale=False,
+            color=node_colors,
+            size=node_sizes,
+            line_width=2))
+
+    fig = go.Figure(data=[edge_trace, node_trace],
+                    layout=go.Layout(
+                        title=f'Network for Narrative: {narrative}',
+                        template='plotly_dark',
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=20, l=5, r=5, t=40),
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    )
+    network_plot.figure = fig
 
 table.on('selection', update_network_graph)
-
-# Initial state for network view
-network_view.content = 'graph TD;\n A[Select a message to see the network]'
 
 ui.run()
