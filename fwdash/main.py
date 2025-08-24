@@ -14,7 +14,13 @@ def generate_message_data(num_messages=50):
     data = []
     for i in range(num_messages):
         narrative = random.choice(narratives)
-        account = random.choice(accounts)
+        # Ensure the account is from the narrative's network for consistency
+        network_nodes = narrative_networks[narrative]['nodes']
+        if network_nodes:
+            account = random.choice(network_nodes)
+        else:
+            account = random.choice(accounts)  # Fallback
+
         data.append({
             'id': i,
             'message': f'This is a sample message for narrative {narrative}. ' + ''.join(random.choices(string.ascii_letters + ' ', k=80)),
@@ -71,7 +77,7 @@ with ui.row().classes('w-full'):
 # Bottom panels
 with ui.row().classes('w-full no-wrap'):
     # Panel 2: Network Graph
-    with ui.card().classes('w-1/2 h-96'):
+    with ui.card().classes('w-1/2 h-96 flex flex-col'):
         ui.label('Account Network').classes('text-h6')
         
         fig = go.Figure()
@@ -85,10 +91,11 @@ with ui.row().classes('w-full no-wrap'):
                 'showarrow': False, 'font': {'size': 16}
             }]
         )
-        network_plot = ui.plotly(fig).classes('w-full flex-grow')
+        with ui.element().classes('flex-grow w-full'):
+            network_plot = ui.plotly(fig).classes('w-full h-full')
 
     # Panel 3: Narrative Density Heatmap
-    with ui.card().classes('w-1/2 h-96'):
+    with ui.card().classes('w-1/2 h-96 flex flex-col'):
         ui.label('Narrative Density Heatmap').classes('text-h6')
 
         heatmap_fig = go.Figure(data=go.Heatmap(
@@ -103,7 +110,8 @@ with ui.row().classes('w-full no-wrap'):
             margin=dict(l=40, r=20, t=20, b=20),
             xaxis=dict(showticklabels=False),
         )
-        ui.plotly(heatmap_fig).classes('w-full flex-grow')
+        with ui.element().classes('flex-grow w-full'):
+            ui.plotly(heatmap_fig).classes('w-full h-full')
 
 # Interactivity
 def update_network_graph(e):
