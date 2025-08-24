@@ -53,10 +53,9 @@ heatmap_data = np.random.randint(0, 21, size=(len(narratives), num_heatmap_inter
 with ui.header(elevated=True).classes('bg-primary text-white'):
     ui.label('Disinformation Narrative Monitor').classes('text-h5')
 
-# Top panels
-with ui.row().classes('w-full no-wrap'):
-    # Panel 1: Messages Table
-    with ui.card().classes('w-1/2 h-96 overflow-y-auto'):
+# Top panel: Messages Table
+with ui.row().classes('w-full'):
+    with ui.card().classes('w-full h-96 overflow-y-auto'):
         ui.label('Detected Propaganda Activity').classes('text-h6')
         columns = [
             {'name': 'id', 'label': 'ID', 'field': 'id', 'sortable': True, 'max-width': '50px'},
@@ -68,6 +67,9 @@ with ui.row().classes('w-full no-wrap'):
         ]
         table = ui.table(columns=columns, rows=message_data, row_key='id', selection='single').classes('h-full')
 
+
+# Bottom panels
+with ui.row().classes('w-full no-wrap'):
     # Panel 2: Network Graph
     with ui.card().classes('w-1/2 h-96'):
         ui.label('Account Network').classes('text-h6')
@@ -85,23 +87,23 @@ with ui.row().classes('w-full no-wrap'):
         )
         network_plot = ui.plotly(fig)
 
-# Bottom Panel: Narrative Density Heatmap
-with ui.column().classes('w-full h-96'):
-    ui.label('Narrative Density Heatmap').classes('text-h6 pl-4')
+    # Panel 3: Narrative Density Heatmap
+    with ui.card().classes('w-1/2 h-96'):
+        ui.label('Narrative Density Heatmap').classes('text-h6')
 
-    heatmap_fig = go.Figure(data=go.Heatmap(
-        z=heatmap_data,
-        x=list(range(num_heatmap_intervals)),
-        y=narratives,
-        colorscale='Inferno',
-        colorbar={'title': 'Messages'}
-    ))
-    heatmap_fig.update_layout(
-        template='plotly_white',
-        margin=dict(l=40, r=20, t=20, b=20),
-        xaxis=dict(showticklabels=False),
-    )
-    ui.plotly(heatmap_fig).classes('w-full flex-grow')
+        heatmap_fig = go.Figure(data=go.Heatmap(
+            z=heatmap_data,
+            x=list(range(num_heatmap_intervals)),
+            y=narratives,
+            colorscale='Inferno',
+            colorbar={'title': 'Messages'}
+        ))
+        heatmap_fig.update_layout(
+            template='plotly_white',
+            margin=dict(l=40, r=20, t=20, b=20),
+            xaxis=dict(showticklabels=False),
+        )
+        ui.plotly(heatmap_fig).classes('w-full h-full')
 
 # Interactivity
 def update_network_graph(e):
