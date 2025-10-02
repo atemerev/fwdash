@@ -361,7 +361,7 @@ def check_firehose_status():
     is_alive = firehose_thread and firehose_thread.is_alive()
 
     if firehose_state == 'CONNECTING':
-        if is_alive and bsky_client.is_running:
+        if is_alive:
             firehose_state = 'CONNECTED'
             status_indicator.color = 'green'
             status_indicator.text = 'CONNECTED'
@@ -376,7 +376,7 @@ def check_firehose_status():
             firehose_thread = None
 
     elif firehose_state == 'CONNECTED':
-        if not is_alive or not bsky_client.is_running:
+        if not is_alive:
             firehose_state = 'OFFLINE'
             status_indicator.color = 'red'
             status_indicator.text = 'OFFLINE'
