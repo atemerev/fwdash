@@ -471,7 +471,7 @@ table.on('row-click', handle_row_click)
 
 # Start firehose subscription in a background thread
 firehose_thread = threading.Thread(target=start_firehose_subscription, daemon=True)
-ui.on_startup(firehose_thread.start)
+firehose_thread.start()
 
 ui.run(
     title='Firewatch',
