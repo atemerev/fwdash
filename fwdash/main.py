@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 import threading
 import logging
 import re
-from atproto import FirehoseSubscribeReposClient, models, CAR, AtUri
-from atproto.exceptions import FirehoseError
-from atproto.firehose import parse_subscribe_repos_message
+from atproto import models, CAR, AtUri
+from atproto_firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
+from atproto_firehose.exceptions import FirehoseError
 
 # Mock data generation
 platforms = ['X', 'Telegram', 'Reddit', 'Bluesky']
