@@ -8,7 +8,7 @@ import threading
 import logging
 import re
 import queue
-from atproto import models, CAR, AtUri
+from atproto import Client, models, CAR, AtUri
 from atproto_firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
 from atproto_firehose.exceptions import FirehoseError
 
@@ -144,6 +144,8 @@ SWISS_KEYWORDS = {
 # Track accounts that have posted Swiss-related content
 swiss_accounts = set()
 bsky_client = FirehoseSubscribeReposClient()
+bsky_api_client = Client()
+did_handle_cache = {}
 
 def is_swiss_related(text: str) -> bool:
     """Check if a text is related to Switzerland based on keywords and language."""
@@ -197,13 +199,26 @@ def on_message_callback(message) -> None:
                 if author_did not in swiss_accounts:
                     swiss_accounts.add(author_did)
                     logging.info(f"New Swiss-related account found: {author_did}")
+                
+                author_handle = did_handle_cache.get(author_did)
+                if not author_handle:
+                    try:
+                        profile = bsky_api_client.get_profile(actor=author_did)
+                        if profile and profile.handle:
+                            author_handle = profile.handle
+                            did_handle_cache[author_did] = author_handle
+                        else:
+                            author_handle = author_did # Fallback
+                    except Exception as e:
+                        logging.warning(f"Could not resolve handle for {author_did}: {e}")
+                        author_handle = author_did # Fallback to DID
 
                 new_message = {
                     'id': len(message_data) + random.random(), # Use random to avoid key collision
                     'timestamp': record.created_at or datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     'message': text,
                     'platform': 'Bluesky',
-                    'account': author_did,
+                    'account': author_handle,
                     'narrative': 'N/A', # Placeholder narrative
                     'score': 0.0 # Placeholder score
                 }
