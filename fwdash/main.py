@@ -149,15 +149,15 @@ HIGH_CONFIDENCE_SWISS_KEYWORDS = {
 
 # Keywords that are often Swiss-related but require language context to avoid false positives
 CONTEXTUAL_SWISS_KEYWORDS = SWISS_CITIES | {
-    # Full canton names (2-letter abbreviations are too ambiguous)
-    'aargau', 'appenzell', 'basel-landschaft', 'basel-stadt', 'fribourg', 'geneva', 'glarus',
-    'graubünden', 'grisons', 'jura', 'lucerne', 'neuchâtel', 'nidwalden', 'obwalden',
-    'schaffhausen', 'schwyz', 'solothurn', 'st. gallen', 'thurgau', 'ticino', 'uri',
-    'vaud', 'valais', 'wallis', 'zug', 'zürich',
-    # Politics (less ambiguous terms)
+    # Full canton names (ambiguous ones like 'zug', 'jura', 'uri' are excluded)
+    'aargau', 'appenzell', 'basel-landschaft', 'basel-stadt', 'geneva', 'glarus',
+    'graubünden', 'grisons', 'lucerne', 'neuchâtel', 'nidwalden', 'obwalden',
+    'schaffhausen', 'schwyz', 'solothurn', 'st. gallen', 'thurgau', 'ticino',
+    'vaud', 'valais', 'zürich',
+    # Politics (less ambiguous terms, parties common in DE/FR are excluded)
     'parlament', 'parlement', 'parlamento',
-    'svp', 'udc', 'sp', 'ps', 'fdp', 'plr', 'glp', 'pvl'
-    # Ambiguous party names like 'mitte', 'centre', 'verts' and abbreviations like 'be', 'fr', 'so' are excluded
+    'svp', 'udc', 'plr', 'glp', 'pvl'
+    # Ambiguous party names and canton abbreviations are excluded
 }
 
 # Track accounts that have posted Swiss-related content
