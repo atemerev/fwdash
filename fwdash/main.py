@@ -141,7 +141,7 @@ SWISS_CITIES = {
 
 # High-confidence keywords that are very specific to Switzerland
 HIGH_CONFIDENCE_SWISS_KEYWORDS = {
-    'switzerland', 'schweiz', 'suisse', 'svizzera', 'helvetic', 'confederation', 'swiss', 'ch',
+    'switzerland', 'schweiz', 'suisse', 'svizzera', 'helvetic', 'confederation', 'swiss',
     'bundesrat', 'nationalrat', 'ständerat', 'volksinitiative', 'abstimmung', 'referendum',
     'conseil fédéral', 'conseil national', 'conseil des états', 'votation',
     'consiglio federale', 'consiglio nazionale', 'consiglio degli stati', 'votazione'
@@ -175,7 +175,11 @@ def is_swiss_related(text: str) -> bool:
         return False
     text_lower = text.lower()
 
-    # 1. High-confidence check: these words are almost exclusively Swiss-related.
+    # 1. High-confidence check: these words/domains are almost exclusively Swiss-related.
+    # Check for .ch domains specifically to avoid matching 'ch' in other contexts.
+    if re.search(r'\.ch(\b|$)', text_lower):
+        return True
+    
     if any(re.search(r'\b' + re.escape(keyword) + r'\b', text_lower) for keyword in HIGH_CONFIDENCE_SWISS_KEYWORDS):
         return True
     
