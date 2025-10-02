@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import threading
 import logging
 import re
+import queue
 from atproto import models, CAR, AtUri
 from atproto_firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
 from atproto_firehose.exceptions import FirehoseError
@@ -127,6 +128,7 @@ narrative_data = {
     }
 }
 narratives = list(narrative_data.keys())
+message_queue = queue.Queue()
 
 # --- BlueSky Firehose Integration ---
 SWISS_CITIES = {
@@ -206,12 +208,7 @@ def on_message_callback(message) -> None:
                     'score': 0.0 # Placeholder score
                 }
 
-                @ui.context_safe
-                def add_to_table():
-                    message_data.insert(0, new_message)
-                    table.update()
-
-                add_to_table()
+                message_queue.put(new_message)
 
     except Exception as e:
         logging.error(f"Error processing firehose message: {e}", exc_info=True)
@@ -468,6 +465,22 @@ def handle_row_click(e):
     update_network_graph(table.selected, network_plot)
 
 table.on('row-click', handle_row_click)
+
+def update_table_from_queue():
+    """Checks the queue for new messages and updates the table."""
+    messages_added = False
+    try:
+        while True:
+            message = message_queue.get_nowait()
+            message_data.insert(0, message)
+            messages_added = True
+    except queue.Empty:
+        pass  # The queue is empty
+
+    if messages_added:
+        table.update()
+
+ui.timer(1.0, update_table_from_queue)
 
 # Start firehose subscription in a background thread
 firehose_thread = threading.Thread(target=start_firehose_subscription, daemon=True)
