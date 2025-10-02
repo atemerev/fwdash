@@ -353,7 +353,7 @@ def toggle_firehose():
         realtime_button.text = 'Stop Realtime'
         realtime_button.disable()
         status_indicator.color = 'green'
-        status_indicator.text = 'CONNECTING'
+        status_indicator.text = 'CONNECTED'
 
 def check_firehose_status():
     """Periodically checks the firehose thread and client status to update UI."""
