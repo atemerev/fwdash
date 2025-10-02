@@ -341,7 +341,7 @@ def toggle_firehose():
         logging.info("Stopping firehose subscription...")
         realtime_button.text = 'Disconnecting...'
         realtime_button.disable()
-        status_indicator.color = 'amber'
+        status_indicator.props('color=amber')
         status_indicator.text = 'DISCONNECTING'
         bsky_client.stop()
     elif firehose_state == 'OFFLINE':
@@ -352,7 +352,7 @@ def toggle_firehose():
         firehose_thread.start()
         realtime_button.text = 'Stop Realtime'
         realtime_button.disable()
-        status_indicator.color = 'green'
+        status_indicator.props('color=green')
         status_indicator.text = 'CONNECTED'
 
 def check_firehose_status():
@@ -363,13 +363,13 @@ def check_firehose_status():
     if firehose_state == 'CONNECTING':
         if is_alive:
             firehose_state = 'CONNECTED'
-            status_indicator.color = 'green'
+            status_indicator.props('color=green')
             status_indicator.text = 'CONNECTED'
             realtime_button.text = 'Stop Realtime'
             realtime_button.enable()
         elif not is_alive:
             firehose_state = 'OFFLINE'
-            status_indicator.color = 'red'
+            status_indicator.props('color=red')
             status_indicator.text = 'OFFLINE'
             realtime_button.text = 'Connect Realtime'
             realtime_button.enable()
@@ -378,7 +378,7 @@ def check_firehose_status():
     elif firehose_state == 'CONNECTED':
         if not is_alive:
             firehose_state = 'OFFLINE'
-            status_indicator.color = 'red'
+            status_indicator.props('color=red')
             status_indicator.text = 'OFFLINE'
             realtime_button.text = 'Connect Realtime'
             realtime_button.enable()
@@ -388,7 +388,7 @@ def check_firehose_status():
     elif firehose_state == 'DISCONNECTING':
         if not is_alive:
             firehose_state = 'OFFLINE'
-            status_indicator.color = 'red'
+            status_indicator.props('color=red')
             status_indicator.text = 'OFFLINE'
             realtime_button.text = 'Connect Realtime'
             realtime_button.enable()
