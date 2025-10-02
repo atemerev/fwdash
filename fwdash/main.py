@@ -180,7 +180,7 @@ def on_message_callback(message) -> None:
             if op.action != 'create' or uri.collection != models.ids.AppBskyFeedPost:
                 continue
 
-            record_raw = car.get_block(op.cid)
+            record_raw = car.blocks.get(op.cid)
             if not record_raw:
                 continue
             
