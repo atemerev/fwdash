@@ -8,7 +8,8 @@ import threading
 import logging
 import re
 import queue
-from atproto import Client, models, CAR, AtUri
+import requests
+from atproto import models, CAR, AtUri
 from atproto_firehose import FirehoseSubscribeReposClient, parse_subscribe_repos_message
 from atproto_firehose.exceptions import FirehoseError
 
@@ -144,7 +145,6 @@ SWISS_KEYWORDS = {
 # Track accounts that have posted Swiss-related content
 swiss_accounts = set()
 bsky_client = FirehoseSubscribeReposClient()
-bsky_api_client = Client()
 did_handle_cache = {}
 
 def is_swiss_related(text: str) -> bool:
@@ -203,15 +203,23 @@ def on_message_callback(message) -> None:
                 author_handle = did_handle_cache.get(author_did)
                 if not author_handle:
                     try:
-                        profile = bsky_api_client.get_profile(actor=author_did)
-                        if profile and profile.handle:
-                            author_handle = profile.handle
-                            did_handle_cache[author_did] = author_handle
+                        # Use public PLC directory to resolve DID without authentication
+                        res = requests.get(f'https://plc.directory/{author_did}', timeout=5)
+                        res.raise_for_status()
+                        did_doc = res.json()
+                        handle = None
+                        # e.g., "alsoKnownAs": ["at://bsky.app"]
+                        if did_doc.get('alsoKnownAs') and did_doc['alsoKnownAs'][0].startswith('at://'):
+                            handle = did_doc['alsoKnownAs'][0][5:]  # Remove 'at://'
+
+                        if handle:
+                            author_handle = handle
+                            did_handle_cache[author_did] = handle
                         else:
-                            author_handle = author_did # Fallback
+                            author_handle = author_did  # Fallback
                     except Exception as e:
                         logging.warning(f"Could not resolve handle for {author_did}: {e}")
-                        author_handle = author_did # Fallback to DID
+                        author_handle = author_did  # Fallback to DID
 
                 new_message = {
                     'id': len(message_data) + random.random(), # Use random to avoid key collision
