@@ -135,12 +135,27 @@ message_queue = queue.Queue()
 SWISS_CITIES = {
     'zurich', 'zürich', 'geneva', 'genève', 'basel', 'lausanne', 'bern', 'winterthur',
     'lucerne', 'luzern', 'st. gallen', 'st gallen', 'lugano', 'sion', 'chur', 'fribourg',
-    'neuchâtel', 'schaffhausen', 'solothurn', 'aarau', 'zug', 'interlaken'
+    'neuchâtel', 'schaffhausen', 'solothurn', 'aarau', 'zug', 'interlaken', 'bellinzona',
+    'Biel', 'Bienne', 'Thun', 'Köniz', 'La Chaux-de-Fonds', 'Uster', 'Rapperswil', 'Jona'
+}
+SWISS_CANTONS = {
+    'ag', 'ai', 'ar', 'be', 'bl', 'bs', 'fr', 'ge', 'gl', 'gr', 'ju', 'lu', 'ne', 'nw', 'ow',
+    'sg', 'sh', 'so', 'sz', 'tg', 'ti', 'ur', 'vd', 'vs', 'zg', 'zh',
+    'aargau', 'appenzell', 'basel-landschaft', 'basel-stadt', 'fribourg', 'geneva', 'glarus',
+    'graubünden', 'grisons', 'jura', 'lucerne', 'neuchâtel', 'nidwalden', 'obwalden',
+    'schaffhausen', 'schwyz', 'solothurn', 'st. gallen', 'thurgau', 'ticino', 'uri',
+    'vaud', 'valais', 'wallis', 'zug', 'zürich'
+}
+SWISS_POLITICS = {
+    'bundesrat', 'nationalrat', 'ständerat', 'parlament', 'abstimmung', 'referendum',
+    'volksinitiative', 'conseil fédéral', 'conseil national', 'conseil des états',
+    'parlement', 'votation', 'consiglio federale', 'consiglio nazionale',
+    'consiglio degli stati', 'parlamento', 'votazione', 'svp', 'udc', 'sp', 'ps',
+    'fdp', 'plr', 'mitte', 'centre', 'gps', 'verts', 'glp', 'pvl'
 }
 SWISS_KEYWORDS = {
-    'switzerland', 'schweiz', 'suisse', 'svizzera', 'ch', 'swiss', 'helvetic', 'confederation',
-    'bundesrat', 'parlament', 'conseil federal', 'consiglio federale'
-} | SWISS_CITIES
+    'switzerland', 'schweiz', 'suisse', 'svizzera', 'ch', 'swiss', 'helvetic', 'confederation'
+} | SWISS_CITIES | SWISS_CANTONS | SWISS_POLITICS
 
 # Track accounts that have posted Swiss-related content
 swiss_accounts = set()
@@ -249,14 +264,11 @@ def on_message_callback(message) -> None:
 
 
 def start_firehose_subscription():
-    """Starts the BlueSky firehose subscription in a background thread."""
-    logging.info("Starting BlueSky firehose subscription...")
+    """Starts the BlueSky firehose subscription. This is a blocking call."""
     try:
         bsky_client.start(on_message_callback)
-    except FirehoseError as e:
-        logging.error(f"Firehose connection error: {e}")
     except Exception as e:
-        logging.error(f"An unexpected error occurred in firehose subscription: {e}", exc_info=True)
+        logging.error(f"Firehose subscription error: {e}", exc_info=True)
 
 
 def generate_message_data(num_messages=50):
@@ -318,11 +330,78 @@ heatmap_x_labels = [(now - timedelta(minutes=i*5)) for i in range(num_heatmap_in
 heatmap_x_labels.reverse()
 
 
+firehose_thread = None
+firehose_state = 'OFFLINE' # OFFLINE, CONNECTING, CONNECTED, DISCONNECTING
+
+def toggle_firehose():
+    """Starts or stops the firehose subscription."""
+    global firehose_thread, bsky_client, firehose_state
+    if firehose_state == 'CONNECTED':
+        firehose_state = 'DISCONNECTING'
+        logging.info("Stopping firehose subscription...")
+        realtime_button.text = 'Disconnecting...'
+        realtime_button.disable()
+        status_indicator.color = 'amber'
+        status_indicator.text = 'DISCONNECTING'
+        bsky_client.stop()
+    elif firehose_state == 'OFFLINE':
+        firehose_state = 'CONNECTING'
+        logging.info("Starting firehose subscription thread...")
+        bsky_client = FirehoseSubscribeReposClient() # Create new client for a new run
+        firehose_thread = threading.Thread(target=start_firehose_subscription, daemon=True)
+        firehose_thread.start()
+        realtime_button.text = 'Stop Realtime'
+        realtime_button.disable()
+        status_indicator.color = 'amber'
+        status_indicator.text = 'CONNECTING'
+
+def check_firehose_status():
+    """Periodically checks the firehose thread and client status to update UI."""
+    global firehose_thread, firehose_state
+    is_alive = firehose_thread and firehose_thread.is_alive()
+
+    if firehose_state == 'CONNECTING':
+        if is_alive and bsky_client.is_running:
+            firehose_state = 'CONNECTED'
+            status_indicator.color = 'green'
+            status_indicator.text = 'CONNECTED'
+            realtime_button.text = 'Stop Realtime'
+            realtime_button.enable()
+        elif not is_alive:
+            firehose_state = 'OFFLINE'
+            status_indicator.color = 'red'
+            status_indicator.text = 'OFFLINE'
+            realtime_button.text = 'Connect Realtime'
+            realtime_button.enable()
+            firehose_thread = None
+
+    elif firehose_state == 'CONNECTED':
+        if not is_alive or not bsky_client.is_running:
+            firehose_state = 'OFFLINE'
+            status_indicator.color = 'red'
+            status_indicator.text = 'OFFLINE'
+            realtime_button.text = 'Connect Realtime'
+            realtime_button.enable()
+            firehose_thread = None
+            logging.warning("Firehose connection lost unexpectedly.")
+
+    elif firehose_state == 'DISCONNECTING':
+        if not is_alive:
+            firehose_state = 'OFFLINE'
+            status_indicator.color = 'red'
+            status_indicator.text = 'OFFLINE'
+            realtime_button.text = 'Connect Realtime'
+            realtime_button.enable()
+            firehose_thread = None
+
 # UI layout
 with ui.header(elevated=True).classes('bg-primary text-white row items-center'):
     ui.label('Firewatch | Disinfo Narrative Monitor').classes('text-h5')
     ui.space()
-    ui.button(icon='menu').props('flat color=white')
+    with ui.row().classes('items-center'):
+        status_indicator = ui.badge('OFFLINE', color='red').classes('mr-2')
+        realtime_button = ui.button('Connect Realtime', on_click=toggle_firehose)
+    ui.button(icon='menu').props('flat color=white').classes('ml-4')
 
 # Top panel: Messages Table
 with ui.row().classes('w-full'):
@@ -515,10 +594,9 @@ def update_table_from_queue():
         table.update()
 
 ui.timer(1.0, update_table_from_queue)
+ui.timer(1.0, check_firehose_status)
 
-# Start firehose subscription in a background thread
-firehose_thread = threading.Thread(target=start_firehose_subscription, daemon=True)
-firehose_thread.start()
+# Firehose subscription is now manually started via the UI button
 
 ui.run(
     title='Firewatch',
