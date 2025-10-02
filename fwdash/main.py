@@ -352,7 +352,7 @@ def toggle_firehose():
         firehose_thread.start()
         realtime_button.text = 'Stop Realtime'
         realtime_button.disable()
-        status_indicator.color = 'amber'
+        status_indicator.color = 'green'
         status_indicator.text = 'CONNECTING'
 
 def check_firehose_status():
