@@ -221,9 +221,20 @@ def on_message_callback(message) -> None:
                         logging.warning(f"Could not resolve handle for {author_did}: {e}")
                         author_handle = author_did  # Fallback to DID
 
+                raw_timestamp = record.created_at
+                if raw_timestamp:
+                    try:
+                        # Parse ISO string with 'Z' and convert to local time
+                        dt_obj = datetime.fromisoformat(raw_timestamp.replace('Z', '+00:00'))
+                        formatted_timestamp = dt_obj.astimezone(None).strftime('%Y-%m-%d %H:%M:%S')
+                    except (ValueError, AttributeError):
+                        formatted_timestamp = raw_timestamp # fallback to original string
+                else:
+                    formatted_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
                 new_message = {
                     'id': len(message_data) + random.random(), # Use random to avoid key collision
-                    'timestamp': record.created_at or datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'timestamp': formatted_timestamp,
                     'message': text,
                     'platform': 'Bluesky',
                     'account': author_handle,
