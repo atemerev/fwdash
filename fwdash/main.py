@@ -138,24 +138,27 @@ SWISS_CITIES = {
     'neuchâtel', 'schaffhausen', 'solothurn', 'aarau', 'zug', 'interlaken', 'bellinzona',
     'Biel', 'Bienne', 'Thun', 'Köniz', 'La Chaux-de-Fonds', 'Uster', 'Rapperswil', 'Jona'
 }
-SWISS_CANTONS = {
-    'ag', 'ai', 'ar', 'be', 'bl', 'bs', 'fr', 'ge', 'gl', 'gr', 'ju', 'lu', 'ne', 'nw', 'ow',
-    'sg', 'sh', 'so', 'sz', 'tg', 'ti', 'ur', 'vd', 'vs', 'zg', 'zh',
+
+# High-confidence keywords that are very specific to Switzerland
+HIGH_CONFIDENCE_SWISS_KEYWORDS = {
+    'switzerland', 'schweiz', 'suisse', 'svizzera', 'helvetic', 'confederation', 'swiss', 'ch',
+    'bundesrat', 'nationalrat', 'ständerat', 'volksinitiative', 'abstimmung', 'referendum',
+    'conseil fédéral', 'conseil national', 'conseil des états', 'votation',
+    'consiglio federale', 'consiglio nazionale', 'consiglio degli stati', 'votazione'
+}
+
+# Keywords that are often Swiss-related but require language context to avoid false positives
+CONTEXTUAL_SWISS_KEYWORDS = SWISS_CITIES | {
+    # Full canton names (2-letter abbreviations are too ambiguous)
     'aargau', 'appenzell', 'basel-landschaft', 'basel-stadt', 'fribourg', 'geneva', 'glarus',
     'graubünden', 'grisons', 'jura', 'lucerne', 'neuchâtel', 'nidwalden', 'obwalden',
     'schaffhausen', 'schwyz', 'solothurn', 'st. gallen', 'thurgau', 'ticino', 'uri',
-    'vaud', 'valais', 'wallis', 'zug', 'zürich'
+    'vaud', 'valais', 'wallis', 'zug', 'zürich',
+    # Politics (less ambiguous terms)
+    'parlament', 'parlement', 'parlamento',
+    'svp', 'udc', 'sp', 'ps', 'fdp', 'plr', 'glp', 'pvl'
+    # Ambiguous party names like 'mitte', 'centre', 'verts' and abbreviations like 'be', 'fr', 'so' are excluded
 }
-SWISS_POLITICS = {
-    'bundesrat', 'nationalrat', 'ständerat', 'parlament', 'abstimmung', 'referendum',
-    'volksinitiative', 'conseil fédéral', 'conseil national', 'conseil des états',
-    'parlement', 'votation', 'consiglio federale', 'consiglio nazionale',
-    'consiglio degli stati', 'parlamento', 'votazione', 'svp', 'udc', 'sp', 'ps',
-    'fdp', 'plr', 'mitte', 'centre', 'gps', 'verts', 'glp', 'pvl'
-}
-SWISS_KEYWORDS = {
-    'switzerland', 'schweiz', 'suisse', 'svizzera', 'ch', 'swiss', 'helvetic', 'confederation'
-} | SWISS_CITIES | SWISS_CANTONS | SWISS_POLITICS
 
 # Track accounts that have posted Swiss-related content
 swiss_accounts = set()
@@ -163,24 +166,38 @@ bsky_client = FirehoseSubscribeReposClient()
 did_handle_cache = {}
 
 def is_swiss_related(text: str) -> bool:
-    """Check if a text is related to Switzerland based on keywords and language."""
+    """
+    Check if a text is related to Switzerland based on keywords and language.
+    This heuristic is designed to reduce false positives by requiring language context
+    for less specific keywords.
+    """
     if not text:
         return False
     text_lower = text.lower()
-    # Simple keyword check. Using regex for word boundaries.
-    if any(re.search(r'\b' + re.escape(keyword) + r'\b', text_lower) for keyword in SWISS_KEYWORDS):
+
+    # 1. High-confidence check: these words are almost exclusively Swiss-related.
+    if any(re.search(r'\b' + re.escape(keyword) + r'\b', text_lower) for keyword in HIGH_CONFIDENCE_SWISS_KEYWORDS):
         return True
     
-    # A simple language check can be done by checking for common words.
-    de_words = {'der', 'die', 'das', 'und', 'ein', 'ist'}
-    fr_words = {'le', 'la', 'les', 'et', 'un', 'est'}
-    it_words = {'il', 'la', 'lo', 'le', 'e', 'un', 'è'}
-
-    words = set(text_lower.split())
+    # 2. Language detection: count common words to guess the language.
+    de_words = {'der', 'die', 'das', 'und', 'ein', 'ist', 'in', 'zu', 'von', 'sich'}
+    fr_words = {'le', 'la', 'les', 'et', 'un', 'est', 'de', 'en', 'pour', 'que'}
+    it_words = {'il', 'la', 'lo', 'le', 'e', 'un', 'è', 'di', 'in', 'che'}
     
-    # If a message seems to be in a swiss national language and mentions a swiss city, it's likely relevant.
-    if (words.intersection(de_words) or words.intersection(fr_words) or words.intersection(it_words)):
-        if any(re.search(r'\b' + re.escape(city) + r'\b', text_lower) for city in SWISS_CITIES):
+    words = set(re.findall(r'\b\w+\b', text_lower))
+    de_score = len(words.intersection(de_words))
+    fr_score = len(words.intersection(fr_words))
+    it_score = len(words.intersection(it_words))
+
+    # Determine if the text is likely in one of the target languages
+    is_de = de_score >= 2 and de_score > fr_score and de_score > it_score
+    is_fr = fr_score >= 2 and fr_score > de_score and fr_score > it_score
+    is_it = it_score >= 2 and it_score > de_score and de_score > fr_score
+
+    # 3. Contextual check: if the language is likely German, French, or Italian,
+    # check for contextual keywords (cities, cantons, political parties).
+    if is_de or is_fr or is_it:
+        if any(re.search(r'\b' + re.escape(keyword) + r'\b', text_lower) for keyword in CONTEXTUAL_SWISS_KEYWORDS):
             return True
 
     return False
