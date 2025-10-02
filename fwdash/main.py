@@ -4,6 +4,12 @@ import string
 import plotly.graph_objects as go
 import numpy as np
 from datetime import datetime, timedelta
+import threading
+import logging
+import re
+from atproto import FirehoseSubscribeReposClient, models, CAR, AtUri
+from atproto.exceptions import FirehoseError
+from atproto.firehose import parse_subscribe_repos_message
 
 # Mock data generation
 platforms = ['X', 'Telegram', 'Reddit', 'Bluesky']
@@ -121,6 +127,106 @@ narrative_data = {
     }
 }
 narratives = list(narrative_data.keys())
+
+# --- BlueSky Firehose Integration ---
+SWISS_CITIES = {
+    'zurich', 'zürich', 'geneva', 'genève', 'basel', 'lausanne', 'bern', 'winterthur',
+    'lucerne', 'luzern', 'st. gallen', 'st gallen', 'lugano', 'sion', 'chur', 'fribourg',
+    'neuchâtel', 'schaffhausen', 'solothurn', 'aarau', 'zug', 'interlaken'
+}
+SWISS_KEYWORDS = {
+    'switzerland', 'schweiz', 'suisse', 'svizzera', 'ch', 'swiss', 'helvetic', 'confederation',
+    'bundesrat', 'parlament', 'conseil federal', 'consiglio federale'
+} | SWISS_CITIES
+
+# Track accounts that have posted Swiss-related content
+swiss_accounts = set()
+bsky_client = FirehoseSubscribeReposClient()
+
+def is_swiss_related(text: str) -> bool:
+    """Check if a text is related to Switzerland based on keywords and language."""
+    if not text:
+        return False
+    text_lower = text.lower()
+    # Simple keyword check. Using regex for word boundaries.
+    if any(re.search(r'\b' + re.escape(keyword) + r'\b', text_lower) for keyword in SWISS_KEYWORDS):
+        return True
+    
+    # A simple language check can be done by checking for common words.
+    de_words = {'der', 'die', 'das', 'und', 'ein', 'ist'}
+    fr_words = {'le', 'la', 'les', 'et', 'un', 'est'}
+    it_words = {'il', 'la', 'lo', 'le', 'e', 'un', 'è'}
+
+    words = set(text_lower.split())
+    
+    # If a message seems to be in a swiss national language and mentions a swiss city, it's likely relevant.
+    if (words.intersection(de_words) or words.intersection(fr_words) or words.intersection(it_words)):
+        if any(re.search(r'\b' + re.escape(city) + r'\b', text_lower) for city in SWISS_CITIES):
+            return True
+
+    return False
+
+def on_message_callback(message) -> None:
+    """Callback function to process messages from the BlueSky firehose."""
+    try:
+        commit = parse_subscribe_repos_message(message)
+        if not isinstance(commit, models.ComAtprotoSyncSubscribeRepos.Commit):
+            return
+
+        car = CAR.from_bytes(commit.blocks)
+        for op in commit.ops:
+            uri = AtUri.from_str(f'at://{commit.repo}/{op.path}')
+
+            if op.action != 'create' or uri.collection != models.ids.AppBskyFeedPost:
+                continue
+
+            record_raw = car.get_block(op.cid)
+            if not record_raw:
+                continue
+            
+            record = models.get_or_create(record_raw, strict=False)
+            if not isinstance(record, models.AppBskyFeedPost) or not getattr(record, 'text', None):
+                continue
+            
+            text = record.text
+            author_did = commit.repo
+
+            if author_did in swiss_accounts or is_swiss_related(text):
+                if author_did not in swiss_accounts:
+                    swiss_accounts.add(author_did)
+                    logging.info(f"New Swiss-related account found: {author_did}")
+
+                new_message = {
+                    'id': len(message_data) + random.random(), # Use random to avoid key collision
+                    'timestamp': record.created_at or datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'message': text,
+                    'platform': 'Bluesky',
+                    'account': author_did,
+                    'narrative': 'N/A', # Placeholder narrative
+                    'score': 0.0 # Placeholder score
+                }
+
+                @ui.context_safe
+                def add_to_table():
+                    message_data.insert(0, new_message)
+                    table.update()
+
+                add_to_table()
+
+    except Exception as e:
+        logging.error(f"Error processing firehose message: {e}", exc_info=True)
+
+
+def start_firehose_subscription():
+    """Starts the BlueSky firehose subscription in a background thread."""
+    logging.info("Starting BlueSky firehose subscription...")
+    try:
+        bsky_client.start(on_message_callback)
+    except FirehoseError as e:
+        logging.error(f"Firehose connection error: {e}")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred in firehose subscription: {e}", exc_info=True)
+
 
 def generate_message_data(num_messages=50):
     """Generates mock message data."""
@@ -362,6 +468,10 @@ def handle_row_click(e):
     update_network_graph(table.selected, network_plot)
 
 table.on('row-click', handle_row_click)
+
+# Start firehose subscription in a background thread
+firehose_thread = threading.Thread(target=start_firehose_subscription, daemon=True)
+ui.on_startup(firehose_thread.start)
 
 ui.run(
     title='Firewatch',
