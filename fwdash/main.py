@@ -185,7 +185,7 @@ def on_message_callback(message) -> None:
                 continue
             
             record = models.get_or_create(record_raw, strict=False)
-            if not isinstance(record, models.AppBskyFeedPost) or not getattr(record, 'text', None):
+            if not isinstance(record, models.app.bsky.feed.post.Main) or not getattr(record, 'text', None):
                 continue
             
             text = record.text
